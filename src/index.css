@@ -1,0 +1,877 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap");
+
+/* ==========================================================================
+   1. DESIGN TOKENS (CSS custom properties)
+   Centralizing colors/fonts/spacing here means every slide automatically
+   stays consistent, and the whole palette can be re-themed from one place.
+   ========================================================================== */
+:root {
+  /* --- Color tokens --- */
+  --bg: #14171c;
+  --bg-vignette: #0d0f13;
+  --panel: #1c212a;
+  --panel-border: #2b3240;
+  --text: #f5f3ee;
+  --text-muted: #9aa3ae;
+  --accent: #f2b155; /* amber "beacon" - voice guidance */
+  --accent-soft: #f2b15522;
+  --accent-2: #6ee7e0; /* cyan "landmark" - computer vision / VPR */
+  --accent-2-soft: #6ee7e022;
+  --accent-3: #c9a7ff; /* violet "touch" - haptic feedback */
+  --accent-3-soft: #c9a7ff22;
+  --danger: #ff8a80;
+
+  /* --- Type tokens --- */
+  --font-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", "Courier New", monospace;
+
+  /* --- Spacing / sizing tokens --- */
+  --slide-pad-x: clamp(2rem, 6vw, 6rem);
+  --slide-pad-y: clamp(1.5rem, 5vh, 4rem);
+  --radius: 14px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 18px;
+  overflow: hidden;
+}
+
+/* ==========================================================================
+   2. LAYOUT: the slide "stage" and the slides themselves
+   ========================================================================== */
+
+.stage {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background: radial-gradient(ellipse at 20% 15%, var(--accent-soft), transparent 45%),
+    radial-gradient(ellipse at 85% 85%, var(--accent-2-soft), transparent 50%), var(--bg);
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--slide-pad-y) var(--slide-pad-x) calc(var(--slide-pad-y) + 3.5rem);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(40px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  overflow-y: auto;
+}
+
+.slide.is-active {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(0);
+}
+
+.slide.exit-left {
+  transform: translateX(-40px);
+  opacity: 0;
+}
+.slide.exit-right {
+  transform: translateX(40px);
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slide {
+    transition: opacity 0.2s linear;
+    transform: none !important;
+  }
+}
+
+.slide-inner {
+  max-width: 980px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent-2);
+  font-size: 0.85rem;
+  margin: 0 0 0.75rem 0;
+}
+
+h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 5vw, 3.6rem);
+  line-height: 1.08;
+  margin: 0 0 1rem 0;
+  font-weight: 700;
+}
+
+h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 3.4vw, 2.4rem);
+  line-height: 1.15;
+  margin: 0 0 1.25rem 0;
+  font-weight: 600;
+}
+
+p,
+li {
+  font-size: clamp(1.05rem, 1.6vw, 1.25rem);
+  line-height: 1.6;
+}
+
+.subtitle {
+  font-size: clamp(1.1rem, 2vw, 1.4rem);
+  color: var(--text-muted);
+  max-width: 620px;
+  line-height: 1.5;
+}
+
+/* ==========================================================================
+   4. CONTENT PATTERNS: cards, grids, timeline, citation tags, problem flag
+   ========================================================================== */
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 1.1rem;
+  margin-top: 1.5rem;
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.4rem;
+}
+
+.card h3 {
+  font-family: var(--font-display);
+  color: var(--accent-2);
+  font-size: 1.1rem;
+  margin: 0 0 0.5rem 0;
+}
+
+.card p {
+  font-size: 1rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.list-clean {
+  list-style: none;
+  padding: 0;
+  margin: 1.25rem 0 0 0;
+  display: grid;
+  gap: 0.9rem;
+}
+.list-clean li {
+  padding-left: 1.6rem;
+  position: relative;
+}
+.list-clean li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.55rem;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* Wider column for diagram-heavy slides. */
+.slide--wide .slide-inner {
+  max-width: 1200px;
+}
+
+.uml-description {
+  margin: 0 0 1.25rem;
+}
+
+.uml-diagram-frame {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 0;
+  padding: 0.75rem;
+  background: #fff;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius);
+}
+
+.uml-diagram {
+  display: block;
+  width: 100%;
+  max-height: 62vh;
+  object-fit: contain;
+}
+
+.problem-flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--danger);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.6rem;
+}
+.problem-flag::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  background: var(--danger);
+  border-radius: 50%;
+}
+
+/* ==========================================================================
+   5. NAVIGATION UI
+   ========================================================================== */
+
+.nav-controls {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  z-index: 20;
+}
+
+.nav-btn {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  color: var(--text);
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  font-size: 1.4rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.nav-btn:hover {
+  background: var(--panel-border);
+}
+.nav-btn:active {
+  transform: scale(0.94);
+}
+.nav-btn:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+.nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.dots {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: min(70vw, 640px);
+  gap: 0.5rem;
+}
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: none;
+  background: var(--panel-border);
+  cursor: pointer;
+  position: relative;
+  padding: 0;
+}
+.dot:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+.dot.is-active {
+  background: var(--accent);
+}
+.dot.is-active::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border: 1.5px solid var(--accent);
+  border-radius: 50%;
+  animation: dot-ping 1.8s ease-out infinite;
+}
+@keyframes dot-ping {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dot.is-active::after {
+    animation: none;
+  }
+}
+
+.slide-counter {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.75rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  z-index: 20;
+}
+
+.kicker-brand {
+  position: fixed;
+  top: 1.5rem;
+  left: 1.75rem;
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  z-index: 20;
+}
+.kicker-brand span {
+  color: var(--accent);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+
+.pipeline-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+.pipeline-step {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--accent-2);
+}
+
+/* ==========================================================================
+   SYSTEM WORKFLOW SLIDES
+   Every animated piece carries `.wf-step`; its entrance only plays while the
+   slide is `.is-active`, so it replays each time you arrive. `--i` staggers.
+   ========================================================================== */
+
+.wf-step {
+  opacity: 0;
+  transform: translateY(10px);
+}
+.slide.is-active .wf-step {
+  animation: wf-in 0.55s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+  animation-delay: calc(0.12s * var(--i, 0) + 0.25s);
+}
+@keyframes wf-in {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wf-step,
+  .slide.is-active .wf-step {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+}
+
+.wf-lede {
+  margin: 0 0 1rem;
+  max-width: 760px;
+  font-size: clamp(0.95rem, 1.4vw, 1.1rem);
+}
+
+/* ---- 1. Overview: node grid ---- */
+.wf-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-rows: auto auto;
+  column-gap: 2.4rem;
+  row-gap: 1rem;
+  margin-top: 1.5rem;
+  align-items: stretch;
+}
+.wf-node {
+  position: relative;
+  align-self: center;
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-top: 3px solid var(--c);
+  border-radius: 12px;
+  padding: 0.8rem 0.9rem 0.9rem;
+  min-height: 0;
+}
+.wf-node-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+.wf-node-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  color: var(--c);
+  background: color-mix(in srgb, var(--c) 16%, transparent);
+}
+.wf-node-stage {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+.wf-node-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--text);
+  margin-bottom: 0.25rem;
+}
+.wf-node-detail {
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+/* Connector arrows live in the column gaps. */
+.wf-out::after,
+.wf-in::before {
+  position: absolute;
+  top: 50%;
+  width: 2.4rem;
+  margin-top: -0.8rem;
+  text-align: center;
+  font-size: 1.15rem;
+  line-height: 1.6rem;
+  color: var(--accent-2);
+  animation: wf-arrow 1.8s ease-in-out infinite;
+}
+.wf-out::after {
+  content: "→";
+  right: -2.4rem;
+}
+/* A node that has both: haptic/voice take the broker's arrow on the left,
+   and send their own on the right. */
+.wf-in::before {
+  content: "→";
+  left: -2.4rem;
+}
+@keyframes wf-arrow {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: translateX(-2px);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(3px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wf-out::after,
+  .wf-in::before {
+    animation: none;
+  }
+}
+
+.wf-notes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.9rem;
+  margin-top: 1.5rem;
+}
+.wf-note {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  margin: 0;
+  padding: 0.7rem 0.95rem;
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+.wf-note svg {
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+  color: var(--accent-2);
+}
+.wf-note strong {
+  color: var(--text);
+}
+
+/* ---- 2. Swim-lanes ---- */
+.lane-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+.lane {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  gap: 1rem;
+  align-items: center;
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-left: 3px solid var(--c);
+  border-radius: 10px;
+  padding: 0.55rem 0.85rem;
+}
+.lane-label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.2rem 0.6rem;
+}
+.lane-num {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--c);
+}
+.lane-name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+.lane-note {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--c);
+  border: 1px solid color-mix(in srgb, var(--c) 50%, transparent);
+  border-radius: 999px;
+  padding: 0.05rem 0.5rem;
+}
+.lane-steps {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+.lane-step-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.lane-arrow {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+.lane-step {
+  font-size: 0.8rem;
+  line-height: 1.3;
+  padding: 0.3rem 0.65rem;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--c) 12%, var(--bg));
+  border: 1px solid color-mix(in srgb, var(--c) 30%, transparent);
+  color: var(--text);
+}
+
+/* ---- 3. Obstacle -> alert path ---- */
+.path-head {
+  display: grid;
+  grid-template-columns: 170px repeat(4, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin: 1rem 0 0.4rem;
+  padding: 0 calc(0.85rem + 3px);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+.path-rows {
+  display: grid;
+  gap: 0.5rem;
+}
+.path-row {
+  display: grid;
+  grid-template-columns: 170px repeat(4, minmax(0, 1fr));
+  gap: 0.6rem;
+  align-items: stretch;
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-left: 3px solid var(--c);
+  border-radius: 10px;
+  padding: 0.65rem 0.85rem;
+}
+.path-agent {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+}
+.path-agent-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  color: var(--c);
+  background: color-mix(in srgb, var(--c) 16%, transparent);
+}
+.path-agent-name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--c);
+}
+.path-agent-io {
+  font-size: 0.68rem;
+  line-height: 1.3;
+  color: var(--text-muted);
+}
+.path-step {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.45rem 0.6rem;
+  border-radius: 8px;
+  background: var(--bg);
+  border: 1px solid var(--panel-border);
+}
+.path-step-title {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--text);
+}
+.path-step-title svg {
+  color: var(--c);
+  flex-shrink: 0;
+}
+.path-step-detail {
+  font-size: 0.68rem;
+  line-height: 1.35;
+  color: var(--text-muted);
+}
+.path-broker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  margin: 0 0 0.5rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  background: var(--accent-2-soft);
+  border: 1px solid #6ee7e055;
+  color: var(--accent-2);
+  font-size: 0.78rem;
+}
+.path-broker strong {
+  font-weight: 600;
+}
+
+/* ---- 4. Loops ---- */
+.loop-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.1rem;
+  margin-top: 1.25rem;
+}
+.loop-card {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-top: 3px solid var(--c);
+  border-radius: var(--radius);
+  padding: 1rem 1.2rem;
+}
+.loop-tag {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--c);
+}
+.loop-card h3 {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  margin: 0.15rem 0 0.8rem;
+}
+.loop-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.2rem;
+  position: relative;
+}
+.loop-steps li {
+  display: flex;
+  gap: 0.7rem;
+  align-items: flex-start;
+  position: relative;
+  padding-bottom: 0.55rem;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+.loop-steps li:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  left: 11px;
+  top: 24px;
+  bottom: 0;
+  width: 2px;
+  background: color-mix(in srgb, var(--c) 35%, transparent);
+}
+.loop-dot {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--bg);
+  background: var(--c);
+}
+.loop-who {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--c);
+}
+.loop-label {
+  display: block;
+  color: var(--text);
+}
+.loop-return {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0.4rem 0 0;
+  padding-top: 0.65rem;
+  border-top: 1px dashed var(--panel-border);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+.loop-return svg {
+  color: var(--c);
+  flex-shrink: 0;
+}
+.banner {
+  margin: 1.1rem 0 0;
+  padding: 0.7rem 1.1rem;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: var(--bg);
+  font-size: 0.95rem;
+}
+.wf-end-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+/* ---- 5. Reference figures ---- */
+.ref-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-top: 1rem;
+  align-items: start;
+}
+.figure {
+  margin: 0;
+  min-width: 0;
+}
+.figure figcaption {
+  margin-top: 0.6rem;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+  text-align: center;
+}
+.ref-img {
+  max-height: 56vh;
+}
+
+@media (max-width: 1000px) {
+  .wf-grid {
+    grid-template-columns: 1fr;
+    row-gap: 1.6rem;
+  }
+  .wf-grid > .wf-node {
+    grid-column: 1 !important;
+    grid-row: auto !important;
+  }
+  .wf-out::after,
+  .wf-in::before {
+    display: none;
+  }
+  .wf-notes,
+  .loop-grid,
+  .ref-pair {
+    grid-template-columns: 1fr;
+  }
+  .lane {
+    grid-template-columns: 1fr;
+  }
+  .path-head {
+    display: none;
+  }
+  .path-row {
+    grid-template-columns: 1fr 1fr;
+  }
+  .path-agent {
+    grid-column: 1 / -1;
+  }
+}
